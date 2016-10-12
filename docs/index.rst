@@ -4,6 +4,8 @@
 Welcome to Xymon client's documentation!
 ========================================
 
+:Home: https://github.com/romain-dartigues/python-xymon-client
+
 Contents:
 
 .. toctree::
