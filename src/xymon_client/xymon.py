@@ -60,7 +60,7 @@ class Xymon(object):
 
 
 	def __str__(self):
-		return self.target[0]
+		return str(self.target[0])
 
 
 	def __repr__(self):
@@ -102,7 +102,7 @@ class Xymon(object):
 				chunk = sock.recv(4096)
 				if not chunk:
 					break
-				result+= [chunk]
+				result+= [chunk.decode('ascii', 'replace')]
 		sock.close()
 		return ''.join(result)
 
@@ -372,7 +372,7 @@ class Xymons(object):
 				)
 				for child in self.children
 			}
-			for child, task in tasks.iteritems():
+			for child, task in tasks.items():
 				try:
 					result[child] = task.get()
 				except:

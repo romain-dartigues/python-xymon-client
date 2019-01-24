@@ -11,7 +11,7 @@ r_version = re.compile(r'__version__\s*=\s*(.*)')
 
 with open('src/xymon_client/xymon.py') as fobj:
 	version = ast.literal_eval(
-		r_version.search(fobj.read().decode('utf8')).group(1)
+		r_version.search(fobj.read()).group(1)
 	)
 
 
@@ -34,6 +34,7 @@ setup(
 		'Natural Language :: English',
 		'Operating System :: OS Independent',
 		'Programming Language :: Python :: 2.7',
+		'Programming Language :: Python :: 3',
 		'Topic :: Software Development :: Libraries :: Python Modules',
 		'Topic :: System :: Monitoring',
 	),
