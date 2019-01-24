@@ -79,7 +79,7 @@ class Helper(object):
 		:param str text:
 		:param default:
 		:type default: None or :class:`Color`
-		:rtype: list of :class:`Color` instances
+		:rtype: list(:class:`Color`)
 		'''
 		result = [
 			color_map['%s' % color]

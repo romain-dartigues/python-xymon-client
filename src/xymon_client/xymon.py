@@ -270,6 +270,10 @@ class Xymon(object):
 
 
 	def ping(self):
+		'''ping the server which should return it's version
+
+		:rtype: str
+		'''
 		return self('ping')
 
 
