@@ -70,7 +70,7 @@ class Helper(object):
 	def color(self):
 		'''current highest level color or :data:`clear` if none found
 		'''
-		return max(self.get_colors(self.data))
+		return max(self.get_colors(self.data, clear))
 
 
 	def get_colors(self, text, default=None):
