@@ -15,6 +15,7 @@ Queries to one Xymon server::
 # In case of minimalistic needs, this file can be shipped alone.
 
 # stdlib
+import collections
 import functools
 import logging
 import multiprocessing.pool
@@ -30,6 +31,18 @@ __version__ = '0.2.dev0'
 logger = logging.getLogger('xymon')
 
 
+
+
+
+class Ghost(collections.namedtuple('Ghost', ('hostname', 'address', 'timestamp'))):
+	__slots__ = ()
+
+	def __new__(cls, hostname, address, timestamp):
+		return super(Ghost, cls).__new__(cls, hostname, address, int(timestamp))
+
+
+	def __str__(self):
+		return '|'.join(map(str, self))
 
 
 
@@ -282,7 +295,26 @@ class Xymon(object):
 
 
 	def ghostlist(self):
-		return self('ghostlist')
+		'''list of ghost clients seen by the Xymon server
+
+		Ghosts are systems that report data to the Xymon server,
+		but are not listed in the hosts.cfg file.
+
+		https://www.xymon.com/help/manpages/man1/ghostlist.cgi.1.html
+
+		:rtype: list(Ghost)
+		'''
+		data = []
+		for line in self('ghostlist').splitlines():
+			try:
+				data.append(Ghost(*line.split('|', 2)))
+			except:
+				logger.error(
+					'invalid ghostlist line: %r',
+					line,
+					exc_info=True
+				)
+		return data
 
 
 	def schedule(self, timestamp=None, command=None):
