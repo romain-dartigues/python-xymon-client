@@ -22,6 +22,8 @@ Queries against a single Xymon server
    xymon.ghostlist()
    # response sample: [Ghost(hostname='xyz.example.net', address='10.234.71.190', timestamp=1476254463), Ghost(hostname='abc.example.net', address='10.234.71.189', timestamp=1476254435), Ghost(hostname='Combo_xtradb', address='10.234.72.13', timestamp=1476254444), Ghost(hostname='Combo_logs01Snalert01', address='10.234.72.13', timestamp=1476254444)]
 
+   xymon.drop('xyz.example.net')
+
 Queries to multiple Xymon servers at once
 =========================================
 
