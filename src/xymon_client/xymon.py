@@ -21,7 +21,13 @@ import logging
 import multiprocessing.pool
 import platform
 import socket
+import sys
 import time
+
+if sys.version_info[0] == 2:
+	StringTypes = (str, unicode, bytearray)
+elif sys.version_info[0] == 3:
+	StringTypes = (str, bytearray)
 
 
 
@@ -265,11 +271,61 @@ class Xymon(object):
 
 
 	def xymondboard(self, criteria=None, fields=None):
-		raise NotImplementedError
-	def xymondxboard(self):
-		raise NotImplementedError
-	def hostinfo(self, criteria):
-		raise NotImplementedError
+		'''
+		:param criteria: (example: color=red)
+		:type criteria: str or dict or list
+		:param fields: (example: hostname,testname,cookie,ackmsg,dismsg)
+		:type fields: str or list
+		:rtype: list
+		'''
+		query = ['xymondboard']
+		if criteria:
+			if isinstance(criteria, dict):
+				criteria = [
+					'%s=%s' % item
+					for item in criteria.items()
+				]
+			query.append(
+				joiniterable(criteria, ' ')
+			)
+
+		if fields:
+			query.append(
+				'fields=%s' % (
+					joiniterable(fields, ','),
+				)
+			)
+
+		result = self(' '.join(query)).splitlines()
+		if fields:
+			return [
+				row.split('|')
+				for row in result
+			]
+
+		return result
+
+
+	def xymondxboard(self, criteria=None, fields=None):
+		'''
+		Same as :meth:`xymondboard`
+		:rtype: str
+		:return: the board **XML serialized**
+		'''
+		return self('xymondxboard %s %s' % (criteria, fields))
+
+
+	def hostinfo(self, criteria=None):
+		'''
+		:param str criteria:
+		:rtype: list(list(str))
+		'''
+		return [
+			line.split('|')
+			for line in self(
+				'hostinfo %s' % (criteria,)
+			).splitlines()
+		]
 
 
 	def download(self, filename):
@@ -429,3 +485,17 @@ class Xymons(object):
 		if not self.thread:
 			return functools.partial(self._apply, name)
 		return functools.partial(self._apply_async, name)
+
+
+
+def joiniterable(obj, sep=','):
+	'''join `obj` with `sep` if it is a non-string iterable
+
+	:param mixed obj: object to be joined
+	:param sep str:
+	:rtype: str
+	'''
+	if hasattr(obj, '__iter__') \
+	and not isinstance(obj, StringTypes):
+		return sep.join(obj)
+	return str(obj)
