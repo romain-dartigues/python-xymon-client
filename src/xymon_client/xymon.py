@@ -409,6 +409,35 @@ class Xymon(object):
 			)
 		)
 
+	######################################################################
+
+	def xymondack(self, hostname, service, validity=60, message='', user=None):
+		'''acknowledge a test in error
+
+		:param str hostname:
+		:param str testname:
+		:param int validity: ack duration in minutes
+		:param str message: ack message
+		:param str user: acking user
+		'''
+		acknum = int(
+			self.xymon.xymondboard(
+				'host=^%s$ test=^%s$' % (hostname, service),
+				'cookie',
+			)
+		)
+
+		# from: xymon/web/acknowledge.c
+		return self.xymon(
+			'xymondack %d %d %s %s' % (
+				acknum,
+				validity,
+				message,
+				user,
+			)
+		)
+
+
 
 
 class Xymons(object):
