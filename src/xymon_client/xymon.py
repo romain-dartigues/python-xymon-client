@@ -33,7 +33,7 @@ elif sys.version_info[0] == 3:
 
 
 
-__version__ = '0.2.dev0'
+__version__ = '0.2.0'
 logger = logging.getLogger('xymon')
 
 
