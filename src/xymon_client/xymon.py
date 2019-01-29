@@ -259,12 +259,24 @@ class Xymon(object):
 
 
 	def xymondlog(self, hostname, testname):
+		'''
+		:param str hostname:
+		:param str testname:
+		:rtype: str
+		:return: status as received (example: may contain HTML)
+		'''
 		return self(
 			'xymondlog %s.%s' % (hostname, testname)
 		)
 
 
 	def xymondxlog(self, hostname, testname):
+		'''
+		:param str hostname:
+		:param str testname:
+		:rtype: str
+		:return: status in **XML**
+		'''
 		return self(
 			'xymondxlog %s.%s' % (hostname, testname)
 		)
