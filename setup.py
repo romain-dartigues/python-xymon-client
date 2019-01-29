@@ -42,4 +42,9 @@ setup(
 	packages=(
 		'xymon_client',
 	),
+	entry_points={
+		'console_scripts': [
+			'xymon-client = xymon_client.__main__:main',
+		],
+	},
 )
