@@ -57,13 +57,11 @@ class Helper(object):
 			self.defaults['hostname'] = hostname
 		if testname:
 			self.defaults['testname'] = testname
-		self.data = bytearray()
+		self.data = ''
 		self.xymon = xymon
 
 
 	def __iadd__(self, other):
-		if isinstance(other, unicode):
-			other = other.encode('utf8', 'replace')
 		self.data+= other
 		return self
 
@@ -72,7 +70,7 @@ class Helper(object):
 	def color(self):
 		'''current highest level color or :data:`clear` if none found
 		'''
-		return max(self.get_colors(self.data))
+		return max(self.get_colors(self.data, clear))
 
 
 	def get_colors(self, text, default=None):
@@ -81,7 +79,7 @@ class Helper(object):
 		:param str text:
 		:param default:
 		:type default: None or :class:`Color`
-		:rtype: list of :class:`Color` instances
+		:rtype: list(:class:`Color`)
 		'''
 		result = [
 			color_map['%s' % color]
@@ -102,7 +100,7 @@ class Helper(object):
 			kwargs.get('text', ''),
 		)
 		# empty the buffer
-		del self.data[:]
+		self.data = ''
 
 		if 'color' not in kwargs:
 			# no color has been explicitely set, find it from the text
@@ -133,7 +131,7 @@ class Helper(object):
 				kwargs.get('text', ''),
 			)
 			# empty the buffer
-			del self.data[:]
+			self.data = ''
 			return getattr(self.xymon, name)(**params)
 
 		if name in {'rename', 'client', 'clientlot', 'modify'}:

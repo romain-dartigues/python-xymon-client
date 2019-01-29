@@ -15,21 +15,40 @@ Queries to one Xymon server::
 # In case of minimalistic needs, this file can be shipped alone.
 
 # stdlib
+import collections
 import functools
 import logging
 import multiprocessing.pool
 import platform
 import socket
+import sys
 import time
 
+if sys.version_info[0] == 2:
+	StringTypes = (str, unicode, bytearray)
+elif sys.version_info[0] == 3:
+	StringTypes = (str, bytearray)
 
 
 
 
-__version__ = '0.1'
+
+__version__ = '0.2.dev0'
 logger = logging.getLogger('xymon')
 
 
+
+
+
+class Ghost(collections.namedtuple('Ghost', ('hostname', 'address', 'timestamp'))):
+	__slots__ = ()
+
+	def __new__(cls, hostname, address, timestamp):
+		return super(Ghost, cls).__new__(cls, hostname, address, int(timestamp))
+
+
+	def __str__(self):
+		return '|'.join(map(str, self))
 
 
 
@@ -60,7 +79,7 @@ class Xymon(object):
 
 
 	def __str__(self):
-		return self.target[0]
+		return str(self.target[0])
 
 
 	def __repr__(self):
@@ -102,7 +121,7 @@ class Xymon(object):
 				chunk = sock.recv(4096)
 				if not chunk:
 					break
-				result+= [chunk]
+				result+= [chunk.decode('ascii', 'replace')]
 		sock.close()
 		return ''.join(result)
 
@@ -240,23 +259,85 @@ class Xymon(object):
 
 
 	def xymondlog(self, hostname, testname):
+		'''
+		:param str hostname:
+		:param str testname:
+		:rtype: str
+		:return: status as received (example: may contain HTML)
+		'''
 		return self(
 			'xymondlog %s.%s' % (hostname, testname)
 		)
 
 
 	def xymondxlog(self, hostname, testname):
+		'''
+		:param str hostname:
+		:param str testname:
+		:rtype: str
+		:return: status in **XML**
+		'''
 		return self(
 			'xymondxlog %s.%s' % (hostname, testname)
 		)
 
 
 	def xymondboard(self, criteria=None, fields=None):
-		raise NotImplementedError
-	def xymondxboard(self):
-		raise NotImplementedError
-	def hostinfo(self, criteria):
-		raise NotImplementedError
+		'''
+		:param criteria: (example: color=red)
+		:type criteria: str or dict or list
+		:param fields: (example: hostname,testname,cookie,ackmsg,dismsg)
+		:type fields: str or list
+		:rtype: list
+		'''
+		query = ['xymondboard']
+		if criteria:
+			if isinstance(criteria, dict):
+				criteria = [
+					'%s=%s' % item
+					for item in criteria.items()
+				]
+			query.append(
+				joiniterable(criteria, ' ')
+			)
+
+		if fields:
+			query.append(
+				'fields=%s' % (
+					joiniterable(fields, ','),
+				)
+			)
+
+		result = self(' '.join(query)).splitlines()
+		if fields:
+			return [
+				row.split('|')
+				for row in result
+			]
+
+		return result
+
+
+	def xymondxboard(self, criteria=None, fields=None):
+		'''
+		Same as :meth:`xymondboard`
+		:rtype: str
+		:return: the board **XML serialized**
+		'''
+		return self('xymondxboard %s %s' % (criteria, fields))
+
+
+	def hostinfo(self, criteria=None):
+		'''
+		:param str criteria:
+		:rtype: list(list(str))
+		'''
+		return [
+			line.split('|')
+			for line in self(
+				'hostinfo %s' % (criteria,)
+			).splitlines()
+		]
 
 
 	def download(self, filename):
@@ -270,6 +351,10 @@ class Xymon(object):
 
 
 	def ping(self):
+		'''ping the server which should return it's version
+
+		:rtype: str
+		'''
 		return self('ping')
 
 
@@ -278,7 +363,26 @@ class Xymon(object):
 
 
 	def ghostlist(self):
-		return self('ghostlist')
+		'''list of ghost clients seen by the Xymon server
+
+		Ghosts are systems that report data to the Xymon server,
+		but are not listed in the hosts.cfg file.
+
+		https://www.xymon.com/help/manpages/man1/ghostlist.cgi.1.html
+
+		:rtype: list(Ghost)
+		'''
+		data = []
+		for line in self('ghostlist').splitlines():
+			try:
+				data.append(Ghost(*line.split('|', 2)))
+			except:
+				logger.error(
+					'invalid ghostlist line: %r',
+					line,
+					exc_info=True
+				)
+		return data
 
 
 	def schedule(self, timestamp=None, command=None):
@@ -316,6 +420,35 @@ class Xymon(object):
 				cause,
 			)
 		)
+
+	######################################################################
+
+	def xymondack(self, hostname, service, validity=60, message='', user=None):
+		'''acknowledge a test in error
+
+		:param str hostname:
+		:param str testname:
+		:param int validity: ack duration in minutes
+		:param str message: ack message
+		:param str user: acking user
+		'''
+		acknum = int(
+			self.xymon.xymondboard(
+				'host=^%s$ test=^%s$' % (hostname, service),
+				'cookie',
+			)
+		)
+
+		# from: xymon/web/acknowledge.c
+		return self.xymon(
+			'xymondack %d %d %s %s' % (
+				acknum,
+				validity,
+				message,
+				user,
+			)
+		)
+
 
 
 
@@ -372,7 +505,7 @@ class Xymons(object):
 				)
 				for child in self.children
 			}
-			for child, task in tasks.iteritems():
+			for child, task in tasks.items():
 				try:
 					result[child] = task.get()
 				except:
@@ -393,3 +526,17 @@ class Xymons(object):
 		if not self.thread:
 			return functools.partial(self._apply, name)
 		return functools.partial(self._apply_async, name)
+
+
+
+def joiniterable(obj, sep=','):
+	'''join `obj` with `sep` if it is a non-string iterable
+
+	:param mixed obj: object to be joined
+	:param sep str:
+	:rtype: str
+	'''
+	if hasattr(obj, '__iter__') \
+	and not isinstance(obj, StringTypes):
+		return sep.join(obj)
+	return str(obj)

@@ -5,13 +5,15 @@ except ImportError:
 	from distutils.core import setup
 
 import ast
+import os
 import re
 
-r_version = re.compile(r'__version__\s*=\s*(.*)')
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 with open('src/xymon_client/xymon.py') as fobj:
 	version = ast.literal_eval(
-		r_version.search(fobj.read().decode('utf8')).group(1)
+		re.compile(r'__version__\s*=\s*(.*)')
+		.search(fobj.read()).group(1)
 	)
 
 
@@ -34,6 +36,7 @@ setup(
 		'Natural Language :: English',
 		'Operating System :: OS Independent',
 		'Programming Language :: Python :: 2.7',
+		'Programming Language :: Python :: 3',
 		'Topic :: Software Development :: Libraries :: Python Modules',
 		'Topic :: System :: Monitoring',
 	),
@@ -41,4 +44,9 @@ setup(
 	packages=(
 		'xymon_client',
 	),
+	entry_points={
+		'console_scripts': [
+			'xymon-client = xymon_client.__main__:main',
+		],
+	},
 )
