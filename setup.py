@@ -5,13 +5,15 @@ except ImportError:
 	from distutils.core import setup
 
 import ast
+import os
 import re
 
-r_version = re.compile(r'__version__\s*=\s*(.*)')
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 with open('src/xymon_client/xymon.py') as fobj:
 	version = ast.literal_eval(
-		r_version.search(fobj.read()).group(1)
+		re.compile(r'__version__\s*=\s*(.*)')
+		.search(fobj.read()).group(1)
 	)
 
 
