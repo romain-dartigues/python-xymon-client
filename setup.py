@@ -30,8 +30,10 @@ setup(
 	url='https://github.com/romain-dartigues/python-xymon-client',
 	classifiers=(
 		'Development Status :: 4 - Beta',
+		'Environment :: Console',
 		'Environment :: Plugins',
 		'Intended Audience :: Developers',
+		'Intended Audience :: System Administrators',
 		'License :: OSI Approved :: BSD License',
 		'Natural Language :: English',
 		'Operating System :: OS Independent',
