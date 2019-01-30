@@ -433,14 +433,14 @@ class Xymon(object):
 		:param str user: acking user
 		'''
 		acknum = int(
-			self.xymon.xymondboard(
+			self.xymondboard(
 				'host=^%s$ test=^%s$' % (hostname, service),
 				'cookie',
 			)
 		)
 
 		# from: xymon/web/acknowledge.c
-		return self.xymon(
+		return self(
 			'xymondack %d %d %s %s' % (
 				acknum,
 				validity,
