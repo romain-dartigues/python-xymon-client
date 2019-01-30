@@ -91,6 +91,18 @@ class Helper(object):
 
 
 	def status(self, message='', **kwargs):
+		'''call :meth:`Xymon.status`
+
+		Generate the query from merging :attr:`defaults`
+		with any additionnal `kwargs` given.
+		The final message is the addition of `message` to
+		any existing :attr:`data` and `kwargs['text']`.
+		Status `color` will be guessed from message text
+		if not explicitely set in the `kwargs`.
+
+		:param str message:
+		:param dict kwargs: additionnal parameters
+		'''
 		params = self.defaults.copy()
 		params.update(kwargs)
 		# build the message

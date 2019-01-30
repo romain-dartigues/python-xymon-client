@@ -29,6 +29,8 @@ REQUIRED = object()
 
 
 class XymonServer(collections.namedtuple('XymonServer', ('hostname', 'port'))):
+	'''describe a Xymon server
+	'''
 	__slots__ = ()
 
 	def __new__(cls, hostname, port):
@@ -49,9 +51,17 @@ class ActionServer(argparse.Action):
 
 
 class KWArgs(dict):
+	'''a dict whose string representation is like arguments for a method
+
+	Example:
+
+	>>> str(KWArgs(foo='bar', x=(4, 2)))
+	"foo='bar', x=(4, 2)"
+	'''
 	@classmethod
-	def from_namespace(cls, namespace, exclude):
-		'''
+	def from_namespace(cls, namespace, exclude=set()):
+		'''build a KWArgs object from an :class:`argparse.Namespace` object
+
 		:param argparse.Namespace namespace:
 		:param set exclude: key to be excluded
 		:rtype: KWArgs
@@ -70,7 +80,8 @@ class KWArgs(dict):
 
 
 def build_parser_for(parser, obj):
-	'''
+	'''inspect a class `obj` to generate subparsers based on it's public methods
+
 	:param argparse._SubParsersAction parser:
 	:param type obj: a class to generate parser for
 	:rtype: None
@@ -100,7 +111,9 @@ def build_parser_for(parser, obj):
 
 
 def get_parser():
-	'''
+	'''get the main options parser
+
+	:return: a parser and a set containing initial parser flags
 	:rtype: list(argparse.ArgumentParser, set)
 	'''
 	parser = argparse.ArgumentParser(
@@ -114,12 +127,13 @@ def get_parser():
 	parser.add_argument('-s', '--server', action=ActionServer,
 		help='comma separated list of Xymon servers (host:port)', required=True)
 	parser.add_argument('--sender',
-		help='sender name exposed to Xymon (default: current machine hostname)')
+		help='sender name exposed to Xymon (default: current machine name)')
 
 	subparsers = parser.add_subparsers(
 		title='Commands', dest='action',
-		help='Command passed to Xymon server(s); refer to https://www.xymon.com/help/manpages/man1/xymon.1.html',
-		metavar='[ACTION]',
+		help='Command passed to Xymon server(s); '\
+		     'refer to https://www.xymon.com/help/manpages/man1/xymon.1.html',
+		metavar='[ACTION [-h] [OPTIONS]]',
 	)
 
 	parser_flags = {action.dest for action in parser._actions}
@@ -130,6 +144,8 @@ def get_parser():
 
 
 def main():
+	'''execute the CLI
+	'''
 	parser, exclude = get_parser()
 	arg = parser.parse_args()
 
@@ -148,7 +164,7 @@ def main():
 	func = getattr(xymon, arg.action)
 	kwargs = KWArgs.from_namespace(arg, exclude)
 
-	logger.debug('going to execute: {}({})'.format(arg.action, kwargs))
+	logger.debug('going to execute: %s(%s))', arg.action, kwargs)
 	if arg.noop:
 		logger.info('dry-run mode, no further action is performed')
 	else:

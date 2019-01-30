@@ -5,7 +5,14 @@
 
 A minimalist [Xymon](https://www.xymon.com/) client library in Python.
 
-Documentation is in the docs/ directory or [online](http://python-xymon-client.readthedocs.io/en/latest/).
+Documentation is in the [docs](docs) directory or [online](http://python-xymon-client.readthedocs.io/en/latest/).
+
+Features:
+
+* Python 2.7 and 3 compatibility
+* no dependencies
+* command line interface
+* easy to use/extend
 
 Alternatives:
 
