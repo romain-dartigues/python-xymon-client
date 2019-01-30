@@ -135,7 +135,8 @@ class Xymon(object):
 
 
 	def status(self, hostname, testname, color, text='', lifetime=None, group=None):
-		'''
+		'''sends a status message for a single test on a single host
+
 		:param str hostname:
 		:param str testname:
 		:param str color:

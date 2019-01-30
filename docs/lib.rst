@@ -24,3 +24,11 @@ Xymon helpers
    :members:
    :undoc-members:
    :show-inheritance:
+
+Command line interface
+======================
+
+.. automodule:: xymon_client.__main__
+   :members:
+   :undoc-members:
+   :show-inheritance:

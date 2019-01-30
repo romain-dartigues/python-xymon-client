@@ -86,9 +86,12 @@ def build_parser_for(parser, obj):
 	:param type obj: a class to generate parser for
 	:rtype: None
 	'''
-	for k, v in obj.__dict__.items():
+	for k, v in sorted(obj.__dict__.items()):
 		if k[0] != '_' and callable(v):
-			sub = parser.add_parser(k, help=v.__doc__)
+			# use the very first docstring line as short help
+			teaser = (v.__doc__ or '').partition('\n')[0]
+			sub = parser.add_parser(k, help=teaser)
+			# the usage is what is shown for: ACTION -h
 			sub.usage = v.__doc__
 			argspec = inspect.getargspec(v)
 			args = zip_longest(
