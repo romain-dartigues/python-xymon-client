@@ -15,7 +15,7 @@ elif sys.version_info[0] == 3:
 	from itertools import zip_longest
 
 # local
-from . import Xymon, Xymons
+from . import __version__, Xymon, Xymons
 
 
 
@@ -127,6 +127,8 @@ def get_parser():
 		action='store_const', const=0, dest='verbose', default=1)
 	parser.add_argument('-v', '--verbose', action='count')
 	parser.add_argument('-n', '--dry-run', dest='noop', action='store_true')
+	parser.add_argument('-V', '--version', action='version',
+		version='%(prog)s {}'.format(__version__))
 	parser.add_argument('-s', '--server', action=ActionServer,
 		help='comma separated list of Xymon servers (host:port)', required=True)
 	parser.add_argument('--sender',
