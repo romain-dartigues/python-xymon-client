@@ -11,7 +11,7 @@ Queries against a single Xymon server
 
 .. code-block:: pycon
 
-   >>> from xymon_client.xymon import Xymon
+   >>> from xymon_client import Xymon
    >>> xymon = Xymon('xymonserver01.example.net')
    >>> response = xymon.ping()
    'xymond 4.3.18\n'
@@ -59,7 +59,7 @@ Helpers
 
 .. code-block:: python
 
-   from xymon_client.xymon import Xymon
+   from xymon_client import Xymon
    from xymon_client.helpers import *
 
    # create an object with default hostname and default service

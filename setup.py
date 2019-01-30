@@ -10,7 +10,7 @@ import re
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-with open('src/xymon_client/xymon.py') as fobj:
+with open('src/xymon_client/__init__.py') as fobj:
 	version = ast.literal_eval(
 		re.compile(r'__version__\s*=\s*(.*)')
 		.search(fobj.read()).group(1)

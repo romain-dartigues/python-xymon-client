@@ -5,12 +5,12 @@ Xymon client - library
 
 .. contents::
 
-.. _xymon_client.xymon:
+.. _xymon_client:
 
 Xymon
 =====
 
-.. automodule:: xymon_client.xymon
+.. automodule:: xymon_client
    :members:
    :undoc-members:
    :show-inheritance:

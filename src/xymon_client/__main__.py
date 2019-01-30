@@ -15,7 +15,7 @@ elif sys.version_info[0] == 3:
 	from itertools import zip_longest
 
 # local
-from . import xymon
+from . import Xymon, Xymons
 
 
 
@@ -124,7 +124,7 @@ def get_parser():
 
 	parser_flags = {action.dest for action in parser._actions}
 
-	build_parser_for(subparsers, xymon.Xymon)
+	build_parser_for(subparsers, Xymon)
 
 	return (parser, parser_flags)
 
@@ -141,11 +141,11 @@ def main():
 
 	if len(arg.server) > 1:
 		# FIXME: the port is not per server
-		x = xymon.Xymons([_.hostname for _ in arg.server], arg.server[0].port, arg.sender)
+		xymon = Xymons([_.hostname for _ in arg.server], arg.server[0].port, arg.sender)
 	else:
-		x = xymon.Xymon(arg.server[0].hostname, arg.server[0].port, arg.sender)
+		xymon = Xymon(arg.server[0].hostname, arg.server[0].port, arg.sender)
 
-	func = getattr(x, arg.action)
+	func = getattr(xymon, arg.action)
 	kwargs = KWArgs.from_namespace(arg, exclude)
 
 	logger.debug('going to execute: {}({})'.format(arg.action, kwargs))
