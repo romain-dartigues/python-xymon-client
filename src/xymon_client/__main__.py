@@ -109,7 +109,8 @@ def build_parser_for(parser, obj):
 					else:
 						kwargs['default'] = default
 						kwargs['help'] = 'default: %(default)r'
-						kwargs['type'] = type(default)
+						if default is not None:
+							kwargs['type'] = type(default)
 					sub.add_argument('--{}'.format(arg), **kwargs)
 
 
