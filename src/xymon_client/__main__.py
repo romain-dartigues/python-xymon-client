@@ -6,7 +6,7 @@ import argparse
 import collections
 import inspect
 import logging
-import pprint
+import os
 import sys
 
 if sys.version_info[0] == 2:
@@ -79,6 +79,82 @@ class KWArgs(dict):
 		)
 
 
+class OutputFormatter(object):
+	__formatter = None
+	__fp = None
+
+	@classmethod
+	def formats(cls):
+		return [
+			k[3:]
+			for k in cls.__dict__
+			if k[:3] == 'to_'
+		]
+
+	def __init__(self, fmt, out=sys.stdout):
+		self.__fp = out
+		try:
+			self.__formatter = getattr(self, 'to_{}'.format(fmt))
+		except AttributeError:
+			raise ValueError(
+				'unsupported format: {}'.format(fmt),
+			)
+
+	def __call__(self, *args, **kwargs):
+		return self.__formatter(*args, **kwargs)
+
+	def to_text(self, data):
+		import pprint
+		try:
+			width = int(os.popen('tput cols').read().rstrip())
+		except:
+			logger.warning(
+				'unable to get terminal width',
+				exc_info=True
+			)
+			width = 80
+
+		pprint.pprint(
+			data,
+			self.__fp,
+			width=width,
+		)
+
+	def to_json(self, data):
+		import json
+		json.dump(
+			data,
+			self.__fp,
+			indent=2,
+			default=str,
+			sort_keys=1,
+		)
+		self.__fp.write('\n')
+
+	def to_yaml(self, data):
+		try:
+			import yaml
+		except ImportError:
+			return self.to_json(data)
+
+		def named_tuple(self, data):
+			if hasattr(data, '_asdict'):
+				return self.represent_dict(data._asdict())
+			return self.represent_list(data)
+
+		yaml.SafeDumper.yaml_multi_representers[tuple] = named_tuple
+		yaml.SafeDumper.yaml_representers[None] = lambda self, data: \
+			self.represent_str(str(data))
+
+		return yaml.safe_dump(
+			data,
+			self.__fp,
+			default_flow_style=0,
+			explicit_start=1,
+			explicit_end=1,
+		)
+
+
 def build_parser_for(parser, obj):
 	'''inspect a class `obj` to generate subparsers based on it's public methods
 
@@ -128,6 +204,7 @@ def get_parser():
 		action='store_const', const=0, dest='verbose', default=1)
 	parser.add_argument('-v', '--verbose', action='count')
 	parser.add_argument('-n', '--dry-run', dest='noop', action='store_true')
+	parser.add_argument('-f', '--format', choices=OutputFormatter.formats(), default='text')
 	parser.add_argument('-V', '--version', action='version',
 		version='%(prog)s {}'.format(__version__))
 	parser.add_argument('-s', '--server', action=ActionServer,
@@ -175,10 +252,7 @@ def main():
 		logger.info('dry-run mode, no further action is performed')
 	else:
 		result = func(**kwargs)
-		if isinstance(result, str):
-			print(result)
-		else:
-			pprint.pprint(result)
+		OutputFormatter(arg.format)(result)
 
 
 
